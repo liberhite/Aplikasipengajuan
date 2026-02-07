@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard PPK - Sistem Pengadaan</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        // DEBUGGING - Global Error Handler
+        window.onerror = function (msg, url, line, col, error) {
+            console.error('JS ERROR:', msg, 'Line:', line, 'Col:', col);
+            // alert('Error: ' + msg + '\nLine: ' + line); // Optional: Uncomment for aggressive debugging
+            return false;
+        };
+
+        // DOM Content Loaded Check
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM Loaded. Checking dependencies...');
+            console.log('Tailwind available:', typeof tailwind !== 'undefined');
+        });
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#7C3AED',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F3F4F6;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-item {
+            transition: all 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-right: 3px solid white;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .animate-slideIn {
+            animation: slideIn 0.3s ease;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c7c7c7;
+            border-radius: 3px;
+        }
+
+        .dropzone {
+            border: 2px dashed #D1D5DB;
+            transition: all 0.3s;
+        }
+
+        .dropzone:hover,
+        .dropzone.dragover {
+            border-color: #4F46E5;
+            background: #EEF2FF;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.7);
+            /* Semi-transparent white */
+            backdrop-filter: blur(2px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top-color: #4F46E5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="text-gray-800">
+
+    <!-- MOCK USER -->
+    <script>
+        const MOCK_USER = {
+            email: 'ppk.budi@kemenkeu.go.id',
+            nama: 'Budi Santoso, S.E.',
+            nip: '198501152010011002',
+            satker: 'Direktorat Pengadaan',
+            avatar: 'BS'
+        };
+    </script>
+
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="text-center">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-primary font-medium">Memproses...</p>
+        </div>
+    </div>
+
+    <!-- MODAL SUKSES DENGAN INFO PP -->
+    <div id="modalSuccess" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Pengajuan Berhasil!</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">Nomor Proses: <span id="successNomor"
+                            class="font-bold text-blue-600"></span></p>
+
+                    <!-- Info PP yang di-assign -->
+                    <div class="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 text-left">
+                        <p class="text-xs font-semibold text-blue-800 uppercase tracking-wide">Ditugaskan ke PP:</p>
+                        <p id="successPPName" class="text-sm font-medium text-gray-900 mt-1"></p>
+                        <p id="successPPEmail" class="text-xs text-gray-600"></p>
+                        <p id="successPPNIP" class="text-xs text-gray-500"></p>
+                    </div>
+
+                    <p class="text-xs text-gray-400 mt-3">Notifikasi email akan dikirim otomatis ke PP terpilih.</p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button onclick="closeModal()"
+                        class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- SIDEBAR -->
+        <aside class="w-64 gradient-bg text-white flex flex-col shadow-2xl">
+            <div class="p-6 border-b border-white/20">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-shopping-cart text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight">Sistem Pengadaan</h1>
+                        <p class="text-xs text-white/70">v2.0 Dashboard</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 py-4">
+                <button type="button" onclick="showPage('dashboard')" id="nav-dashboard"
+                    class="w-full text-left sidebar-item active flex items-center gap-3 px-6 py-3 text-sm text-white">
+                    <i class="fas fa-home w-5"></i> Dashboard
+                </button>
+                <button type="button" onclick="showPage('pengajuan')" id="nav-pengajuan"
+                    class="w-full text-left sidebar-item flex items-center gap-3 px-6 py-3 text-sm text-white/80 hover:text-white">
+                    <i class="fas fa-file-alt w-5"></i> Pengajuan Baru
+                </button>
+                <button type="button" onclick="showPage('riwayat')" id="nav-riwayat"
+                    class="w-full text-left sidebar-item flex items-center gap-3 px-6 py-3 text-sm text-white/80 hover:text-white">
+                    <i class="fas fa-history w-5"></i> Riwayat
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-white/20">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">
+                        ${MOCK_USER.avatar}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium truncate">${MOCK_USER.nama}</p>
+                        <p class="text-xs text-white/70 truncate">${MOCK_USER.satker}</p>
+                    </div>
+                </div>
+                <button onclick="logout()"
+                    class="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 overflow-y-auto">
+
+            <!-- HEADER -->
+            <header
+                class="glass sticky top-0 z-30 px-8 py-4 border-b border-gray-200 flex justify-between items-center">
+                <div>
+                    <h2 id="page-title" class="text-2xl font-bold text-gray-800">Dashboard</h2>
+                    <p id="page-subtitle" class="text-sm text-gray-500">Ringkasan pengajuan pengadaan</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="relative p-2 text-gray-500 hover:text-primary transition">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span
+                            class="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
+                    </button>
+                    <span class="text-sm text-gray-500" id="currentDate"></span>
+                </div>
+            </header>
+
+            <div class="p-8">
+
+                <!-- PAGE: DASHBOARD -->
+                <div id="page-dashboard" class="animate-fadeIn">
+                    <!-- Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border-l-4 border-primary">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm text-gray-500 mb-1">Total Pengajuan</p>
+                                    <h3 class="text-3xl font-bold text-gray-800" id="stat-total">0</h3>
+                                </div>
+                                <div
+                                    class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                                    <i class="fas fa-clipboard-list text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border-l-4 border-warning">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm text-gray-500 mb-1">Sedang Diproses</p>
+                                    <h3 class="text-3xl font-bold text-gray-800" id="stat-diproses">0</h3>
+                                </div>
+                                <div
+                                    class="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center text-warning">
+                                    <i class="fas fa-clock text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border-l-4 border-success">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm text-gray-500 mb-1">Selesai</p>
+                                    <h3 class="text-3xl font-bold text-gray-800" id="stat-selesai">0</h3>
+                                </div>
+                                <div
+                                    class="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center text-success">
+                                    <i class="fas fa-check-circle text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border-l-4 border-danger">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm text-gray-500 mb-1">Ditolak</p>
+                                    <h3 class="text-3xl font-bold text-gray-800" id="stat-ditolak">0</h3>
+                                </div>
+                                <div
+                                    class="w-12 h-12 bg-danger/10 rounded-lg flex items-center justify-center text-danger">
+                                    <i class="fas fa-times-circle text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                            <h3 class="font-bold text-lg">Pengajuan Terbaru</h3>
+                            <button onclick="showPage('riwayat')" class="text-primary text-sm hover:underline">Lihat
+                                Semua</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Nomor</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama
+                                            Paket</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Jenis</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">HPS
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">PP
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200" id="recent-table">
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE: PENGAJUAN BARU -->
+                <div id="page-pengajuan" class="hidden animate-slideIn">
+                    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="gradient-bg px-8 py-6 text-white">
+                            <h3 class="text-2xl font-bold">Form Pengajuan Baru</h3>
+                            <p class="text-white/80 text-sm mt-1">Isi data pengadaan dengan lengkap</p>
+                        </div>
+
+                        <form id="formPengajuan" class="p-8 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Proses</label>
+                                    <input type="text" id="nomorProses" readonly
+                                        class="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-600 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Pengadaan
+                                        *</label>
+                                    <select id="jenisPengadaan" required
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="">Pilih Jenis...</option>
+                                        <option value="Pengadaan Langsung">Pengadaan Langsung</option>
+                                        <option value="E-Purchasing">E-Purchasing</option>
+                                        <option value="Penunjukan Langsung">Penunjukan Langsung</option>
+                                        <option value="Tender">Tender</option>
+                                        <option value="Seleksi">Seleksi</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nama Paket Pekerjaan
+                                    *</label>
+                                <input type="text" id="namaPaket" required
+                                    placeholder="Contoh: Pengadaan Laptop Dell XPS 15..."
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Uraian Pekerjaan/Spesifikasi
+                                    *</label>
+                                <textarea id="uraian" required rows="4" placeholder="Jelaskan detail pekerjaan..."
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"></textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Satuan Kerja</label>
+                                    <input type="text" id="satker" readonly
+                                        class="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama PPK</label>
+                                    <input type="text" id="namaPPK" readonly
+                                        class="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">HPS (Rp) *</label>
+                                    <input type="text" id="hps" required placeholder="0" oninput="formatRupiah(this)"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Jangka Waktu *</label>
+                                    <input type="text" id="jangkaWaktu" required placeholder="Contoh: 30 hari kalender"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                </div>
+                            </div>
+
+                            <div class="border-t pt-6">
+                                <h4 class="font-semibold text-gray-800 mb-4">Dokumen Pendukung</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                                    <div class="dropzone rounded-lg p-4 text-center cursor-pointer"
+                                        onclick="document.getElementById('fileNota').click()"
+                                        ondrop="handleDrop(event, 'nota')" ondragover="handleDragOver(event)"
+                                        ondragleave="handleDragLeave(event)">
+                                        <input type="file" id="fileNota" class="hidden" accept=".pdf,.doc,.docx"
+                                            onchange="handleFile(this, 'nota')">
+                                        <i class="fas fa-file-alt text-3xl text-gray-400 mb-2"></i>
+                                        <p class="text-sm font-medium text-gray-700">Nota Dinas</p>
+                                        <p class="text-xs text-gray-500 mt-1">PDF/DOC (Max 10MB)</p>
+                                        <div id="preview-nota" class="mt-2 hidden"></div>
+                                    </div>
+
+                                    <div class="dropzone rounded-lg p-4 text-center cursor-pointer"
+                                        onclick="document.getElementById('fileHPS').click()"
+                                        ondrop="handleDrop(event, 'hps')" ondragover="handleDragOver(event)"
+                                        ondragleave="handleDragLeave(event)">
+                                        <input type="file" id="fileHPS" class="hidden" accept=".pdf,.xls,.xlsx"
+                                            onchange="handleFile(this, 'hps')">
+                                        <i class="fas fa-file-excel text-3xl text-gray-400 mb-2"></i>
+                                        <p class="text-sm font-medium text-gray-700">File HPS</p>
+                                        <p class="text-xs text-gray-500 mt-1">PDF/XLS (Max 10MB)</p>
+                                        <div id="preview-hps" class="mt-2 hidden"></div>
+                                    </div>
+
+                                    <div class="dropzone rounded-lg p-4 text-center cursor-pointer"
+                                        onclick="document.getElementById('fileKontrak').click()"
+                                        ondrop="handleDrop(event, 'kontrak')" ondragover="handleDragOver(event)"
+                                        ondragleave="handleDragLeave(event)">
+                                        <input type="file" id="fileKontrak" class="hidden" accept=".pdf,.doc,.docx"
+                                            onchange="handleFile(this, 'kontrak')">
+                                        <i class="fas fa-file-contract text-3xl text-gray-400 mb-2"></i>
+                                        <p class="text-sm font-medium text-gray-700">Rancangan Kontrak</p>
+                                        <p class="text-xs text-gray-500 mt-1">PDF/DOC (Max 10MB)</p>
+                                        <div id="preview-kontrak" class="mt-2 hidden"></div>
+                                    </div>
+
+                                    <div class="dropzone rounded-lg p-4 text-center cursor-pointer"
+                                        onclick="document.getElementById('fileSpek').click()"
+                                        ondrop="handleDrop(event, 'spek')" ondragover="handleDragOver(event)"
+                                        ondragleave="handleDragLeave(event)">
+                                        <input type="file" id="fileSpek" class="hidden" accept=".pdf,.zip"
+                                            onchange="handleFile(this, 'spek')">
+                                        <i class="fas fa-file-archive text-3xl text-gray-400 mb-2"></i>
+                                        <p class="text-sm font-medium text-gray-700">Spesifikasi Teknis</p>
+                                        <p class="text-xs text-gray-500 mt-1">PDF/ZIP (Max 50MB)</p>
+                                        <div id="preview-spek" class="mt-2 hidden"></div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="flex gap-4 pt-6 border-t">
+                                <button type="submit" id="btnSubmit"
+                                    class="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-6 rounded-lg transition transform hover:scale-[1.02]">
+                                    <i class="fas fa-paper-plane mr-2"></i> Submit Pengajuan
+                                </button>
+                                <button type="button" onclick="resetForm()"
+                                    class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                                    Reset
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PAGE: RIWAYAT -->
+                <div id="page-riwayat" class="hidden animate-fadeIn">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div
+                            class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <h3 class="font-bold text-lg">Semua Pengajuan</h3>
+                            <div class="flex gap-2">
+                                <input type="text" id="searchInput" placeholder="Cari..." onkeyup="searchTable()"
+                                    class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary">
+                                <select id="filterStatus" onchange="filterTable()"
+                                    class="px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                                    <option value="">Semua Status</option>
+                                    <option value="Menunggu">Menunggu</option>
+                                    <option value="Diproses">Diproses</option>
+                                    <option value="Selesai">Selesai</option>
+                                    <option value="Ditolak">Ditolak</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full" id="tableRiwayat">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Nomor</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Tanggal</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama
+                                            Paket</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Jenis</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">HPS
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">PP
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200" id="riwayat-body">
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        let currentPage = 'dashboard';
+        let uploadedFiles = {};
+        let pengajuanData = [];
+        let isLoading = false;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set tanggal
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Set form defaults
+            document.getElementById('satker').value = MOCK_USER.satker;
+            document.getElementById('namaPPK').value = MOCK_USER.nama;
+
+            // Load data
+            loadDataFromSheet();
+            generateNomorProses();
+
+            // Setup form submit handler
+            document.getElementById('formPengajuan').addEventListener('submit', submitPengajuan);
+        });
+
+        // ==========================================
+        // UTILITIES
+        // ==========================================
+        function safeGetElement(id) {
+            const el = document.getElementById(id);
+            if (!el) console.warn('Element not found:', id);
+            return el;
+        }
+
+        function showPage(pageId) {
+            console.log('Navigating to:', pageId);
+
+            // Hide all pages
+            ['dashboard', 'pengajuan', 'riwayat'].forEach(p => {
+                const pageEl = safeGetElement('page-' + p);
+                const navEl = safeGetElement('nav-' + p);
+
+                if (pageEl) pageEl.classList.add('hidden');
+                if (navEl) {
+                    navEl.classList.remove('active', 'bg-white/20', 'border-r-4', 'border-white');
+                    navEl.classList.add('text-white/80');
+                    navEl.classList.remove('text-white', 'font-semibold');
+                }
+            });
+
+            // Show target page
+            const targetPage = safeGetElement('page-' + pageId);
+            const targetNav = safeGetElement('nav-' + pageId);
+
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            } else {
+                console.error('Page element not found:', pageId);
+                return;
+            }
+
+            if (targetNav) {
+                targetNav.classList.add('active', 'bg-white/20', 'border-r-4', 'border-white', 'text-white', 'font-semibold');
+                targetNav.classList.remove('text-white/80');
+            }
+
+            // Update Header
+            const titles = {
+                dashboard: { title: 'Dashboard', subtitle: 'Ringkasan pengajuan pengadaan' },
+                pengajuan: { title: 'Pengajuan Baru', subtitle: 'Buat pengajuan pengadaan baru' },
+                riwayat: { title: 'Riwayat Pengajuan', subtitle: 'Semua riwayat pengajuan Anda' }
+            };
+
+            const titleEl = safeGetElement('page-title');
+            const subtitleEl = safeGetElement('page-subtitle');
+
+            if (titleEl) titleEl.textContent = titles[pageId]?.title || 'Dashboard';
+            if (subtitleEl) subtitleEl.textContent = titles[pageId]?.subtitle || '';
+
+            currentPage = pageId;
+
+            // Load data if needed
+            if (pageId === 'dashboard' || pageId === 'riwayat') {
+                loadDataFromSheet();
+            }
+        }
+
+        let loadingTimeout;
+
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (show) {
+                overlay.style.display = 'flex';
+                // Auto-hide after 10 seconds to prevent permanent white screen
+                clearTimeout(loadingTimeout);
+                loadingTimeout = setTimeout(() => {
+                    if (overlay.style.display === 'flex') {
+                        console.warn('Loading timed out - forcing close');
+                        overlay.style.display = 'none';
+                        alert('Koneksi lambat atau tidak merespon. Silakan coba lagi.');
+                    }
+                }, 10000);
+            } else {
+                overlay.style.display = 'none';
+                clearTimeout(loadingTimeout);
+            }
+        }
+
+        function loadDataFromSheet() {
+            showLoading(true);
+
+            // Check if google.script.run is available (prevents crash in local testing)
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                console.error('Google Script Run not available (Local/Dev mode)');
+                showLoading(false);
+                return;
+            }
+
+            try {
+                google.script.run
+                    .withSuccessHandler(function (result) {
+                        showLoading(false);
+
+                        if (result.success) {
+                            const totalEl = document.getElementById('stat-total');
+                            if (totalEl) totalEl.textContent = result.stats.total;
+
+                            const diprosesEl = document.getElementById('stat-diproses');
+                            if (diprosesEl) diprosesEl.textContent = result.stats.diproses;
+
+                            const selesaiEl = document.getElementById('stat-selesai');
+                            if (selesaiEl) selesaiEl.textContent = result.stats.selesai;
+
+                            const ditolakEl = document.getElementById('stat-ditolak');
+                            if (ditolakEl) ditolakEl.textContent = result.stats.ditolak;
+
+                            pengajuanData = result.pengajuan;
+                            renderRecentTable();
+                            renderRiwayatTable();
+                        } else {
+                            console.error('Data load error:', result.error);
+                            // alert('Error loading data: ' + result.error); // Optional: less intrusive
+                        }
+                    })
+                    .withFailureHandler(function (error) {
+                        showLoading(false);
+                        console.error('Server connection failed:', error);
+                    })
+                    .apiGetDashboardData(MOCK_USER.email);
+            } catch (e) {
+                console.error('Exception in loadDataFromSheet:', e);
+                showLoading(false);
+            }
+        }
+
+        function generateNomorProses() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+
+            try {
+                google.script.run
+                    .withSuccessHandler(function (result) {
+                        if (result.success) {
+                            const input = document.getElementById('nomorProses');
+                            if (input) input.value = result.nomorProses;
+                        }
+                    })
+                    .withFailureHandler(function (err) {
+                        console.error('Failed to generate nomor:', err);
+                    })
+                    .apiGetNextNomorProses();
+            } catch (e) {
+                console.error('Exception in generateNomorProses:', e);
+            }
+        }
+
+        function renderRecentTable() {
+            const tbody = document.getElementById('recent-table');
+            const recent = pengajuanData.slice(0, 5);
+
+            if (recent.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Belum ada pengajuan</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = recent.map(item => `
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 font-medium text-primary">${item.nomor}</td>
+          <td class="px-6 py-4">${item.namaPaket}</td>
+          <td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 rounded text-xs">${item.jenis}</span></td>
+          <td class="px-6 py-4">Rp ${formatRupiahStatic(item.hps)}</td>
+          <td class="px-6 py-4">${getStatusBadge(item.status)}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">${item.pp}</td>
+        </tr>
+      `).join('');
+        }
+
+        function renderRiwayatTable() {
+            const tbody = document.getElementById('riwayat-body');
+
+            if (pengajuanData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">Belum ada pengajuan</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = pengajuanData.map(item => `
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 font-medium text-primary">${item.nomor}</td>
+          <td class="px-6 py-4 text-sm">${item.tanggal}</td>
+          <td class="px-6 py-4">${item.namaPaket}</td>
+          <td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 rounded text-xs">${item.jenis}</span></td>
+          <td class="px-6 py-4">Rp ${formatRupiahStatic(item.hps)}</td>
+          <td class="px-6 py-4">${getStatusBadge(item.status)}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">${item.pp}</td>
+        </tr>
+      `).join('');
+        }
+
+        function getStatusBadge(status) {
+            const colors = {
+                'Menunggu': 'bg-yellow-100 text-yellow-800',
+                'Diproses': 'bg-blue-100 text-blue-800',
+                'Selesai': 'bg-green-100 text-green-800',
+                'Ditolak': 'bg-red-100 text-red-800'
+            };
+            return `<span class="px-2 py-1 rounded-full text-xs font-medium ${colors[status] || 'bg-gray-100'}">${status}</span>`;
+        }
+
+        // ==========================================
+        // SUBMIT PENGAJUAN (UPDATED)
+        // ==========================================
+        async function submitPengajuan(e) {
+            if (e) e.preventDefault(); // Safety check
+            console.log('Submit clicked');
+
+            if (isLoading) return;
+
+            // 1. Validasi Dokumen
+            if (Object.keys(uploadedFiles).length === 0) {
+                alert('Minimal upload 1 dokumen pendukung!');
+                return;
+            }
+
+            // 2. Validasi Form Fields
+            const namaPaket = safeGetElement('namaPaket')?.value.trim();
+            const jenisPengadaan = safeGetElement('jenisPengadaan')?.value;
+            const uraian = safeGetElement('uraian')?.value.trim();
+            const hpsInput = safeGetElement('hps');
+            const hps = hpsInput ? hpsInput.value.replace(/\D/g, '') : '0';
+            const jangkaWaktu = safeGetElement('jangkaWaktu')?.value.trim();
+            const nomorProses = safeGetElement('nomorProses')?.value;
+
+            if (!namaPaket || !jenisPengadaan || !uraian || !hps || !jangkaWaktu) {
+                alert('Harap lengkapi semua field yang wajib (bertanda *)!');
+                return;
+            }
+
+            // 3. Lock UI
+            const btn = safeGetElement('btnSubmit');
+            const originalBtnText = btn ? btn.innerHTML : 'Submit';
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+            }
+            showLoading(true);
+            isLoading = true;
+
+            try {
+                // 4. Upload Files ke Google Drive (Client-side logic retained)
+                const fileUrls = { notaDinasUrl: '', hpsUrl: '', kontrakUrl: '', spesifikasiUrl: '' };
+
+                // Upload loop
+                for (const [type, file] of Object.entries(uploadedFiles)) {
+                    console.log(`Uploading ${type}...`);
+                    try {
+                        const result = await uploadFileToDrive(file);
+                        if (result.success) {
+                            if (type === 'nota') fileUrls.notaDinasUrl = result.fileUrl;
+                            if (type === 'hps') fileUrls.hpsUrl = result.fileUrl;
+                            if (type === 'kontrak') fileUrls.kontrakUrl = result.fileUrl;
+                            if (type === 'spek') fileUrls.spesifikasiUrl = result.fileUrl;
+                        } else {
+                            throw new Error(`Gagal upload ${type}: ${result.error}`);
+                        }
+                    } catch (uploadErr) {
+                        throw new Error(`Gagal upload file: ${uploadErr.message}`);
+                    }
+                }
+
+                // 5. Prepare Payload
+                const formData = {
+                    nomorProses: nomorProses,
+                    tanggal: new Date().toISOString().split('T')[0],
+                    namaPaket: namaPaket,
+                    uraianPekerjaan: uraian,
+                    emailPPK: MOCK_USER.email,
+                    namaPPK: MOCK_USER.nama,
+                    satker: MOCK_USER.satker,
+                    jenisPengadaan: jenisPengadaan,
+                    hpsNominal: hps,
+                    jangkaWaktu: jangkaWaktu,
+                    ...fileUrls
+                };
+
+                console.log('Sending data:', formData);
+
+                // 6. Submit ke Server (Google Apps Script)
+                google.script.run
+                    .withSuccessHandler(function (response) {
+                        console.log('Success response:', response);
+                        isLoading = false;
+                        showLoading(false);
+
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = originalBtnText;
+                        }
+
+                        if (response.success) {
+                            // Update Success Modal
+                            const successNomor = safeGetElement('successNomor');
+                            if (successNomor) successNomor.textContent = response.nomorProses || formData.nomorProses;
+
+                            if (response.assignedPP) {
+                                const ppName = safeGetElement('successPPName');
+                                const ppEmail = safeGetElement('successPPEmail');
+                                const ppNIP = safeGetElement('successPPNIP');
+
+                                if (ppName) ppName.textContent = response.assignedPP.nama || 'Belum ditugaskan';
+                                if (ppEmail) ppEmail.textContent = response.assignedPP.email || '';
+                                if (ppNIP) ppNIP.textContent = 'NIP: ' + (response.assignedPP.nip || '-');
+                            }
+
+                            // Show Modal
+                            const modal = safeGetElement('modalSuccess');
+                            if (modal) modal.classList.remove('hidden');
+
+                            // Refresh & Reset
+                            loadDataFromSheet();
+                            resetForm();
+                        } else {
+                            alert('Gagal menyimpan: ' + (response.error || 'Unknown error'));
+                        }
+                    })
+                    .withFailureHandler(function (error) {
+                        console.error('Server failure:', error);
+                        isLoading = false;
+                        showLoading(false);
+
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = originalBtnText;
+                        }
+                        alert('Terjadi kesalahan server: ' + error.message);
+                    })
+                    .apiSubmitPengajuan(formData);
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                isLoading = false;
+                showLoading(false);
+
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnText;
+                }
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function uploadFileToDrive(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    google.script.run
+                        .withSuccessHandler(resolve)
+                        .withFailureHandler(reject)
+                        .apiUploadFile(e.target.result, file.name, file.type || 'application/octet-stream');
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ==========================================
+        // FILE HANDLING
+        // ==========================================
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(e, type) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0], type);
+        }
+
+        function handleFile(input, type) {
+            if (input.files.length) processFile(input.files[0], type);
+        }
+
+        function processFile(file, type) {
+            const maxSize = type === 'spek' ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('File terlalu besar! Max ' + (maxSize / 1024 / 1024) + 'MB');
+                return;
+            }
+
+            uploadedFiles[type] = file;
+            const preview = document.getElementById('preview-' + type);
+            preview.innerHTML = `<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">✓ ${file.name}</span>`;
+            preview.classList.remove('hidden');
+        }
+
+        // ==========================================
+        // MODAL FUNCTIONS
+        // ==========================================
+        function closeModal() {
+            document.getElementById('modalSuccess').classList.add('hidden');
+            resetForm();
+            showPage('dashboard');
+        }
+
+        function resetForm() {
+            document.getElementById('formPengajuan').reset();
+            uploadedFiles = {};
+            ['nota', 'hps', 'kontrak', 'spek'].forEach(type => {
+                document.getElementById('preview-' + type).innerHTML = '';
+                document.getElementById('preview-' + type).classList.add('hidden');
+            });
+            document.getElementById('satker').value = MOCK_USER.satker;
+            document.getElementById('namaPPK').value = MOCK_USER.nama;
+            generateNomorProses();
+        }
+
+        // ==========================================
+        // UTILITY FUNCTIONS
+        // ==========================================
+        function formatRupiah(input) {
+            let value = input.value.replace(/\D/g, '');
+            value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            input.value = value;
+        }
+
+        function formatRupiahStatic(angka) {
+            return angka ? parseInt(angka).toLocaleString('id-ID') : '0';
+        }
+
+        function searchTable() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('#riwayat-body tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
+            });
+        }
+
+        function filterTable() {
+            const status = document.getElementById('filterStatus').value;
+            document.querySelectorAll('#riwayat-body tr').forEach(row => {
+                const rowStatus = row.querySelector('td:nth-child(6)')?.textContent.trim();
+                row.style.display = (!status || rowStatus === status) ? '' : 'none';
+            });
+        }
+
+        function logout() {
+            if (confirm('Yakin ingin logout?')) {
+                localStorage.removeItem('userSession');
+                localStorage.removeItem('token');
+                window.location.href = '?page=login';
+            }
+        }
+    </script>
+</body>
+
+</html>
