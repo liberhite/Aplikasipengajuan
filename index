@@ -321,7 +321,7 @@
             showLoading(true);
             
             try {
-                let url = `${CONFIG.API_URL}?action=${action}`;
+                let url = `${https://script.google.com/macros/s/AKfycbwQlV0YFQELW4iMPnIIukInzn_9tM_MSJXbrnoIJ1-Gk4L8HXB5b9_2zAzUSMFiF1J2FA/exec}?action=${action}`;
                 
                 // Add query params
                 Object.keys(params).forEach(key => {
