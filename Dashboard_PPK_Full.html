@@ -128,7 +128,32 @@
 
   <script>
     // ⚠️ GANTI URL INI DENGAN URL DEPLOYMENT LU!
-    const API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxwIZ7apVphYVyG9xWnEpXzcVZVeaRlf5D8dF7w2TqoT9vCERQmcppaCVGDBGo1-IsmHg/exec';
+```
+
+5. Scroll ke bawah, klik **Commit changes** (tombol hijau)
+6. Di popup, langsung klik **Commit changes** lagi
+
+---
+
+## **⚙️ OPTIONAL: Setting Folder Drive untuk Upload File**
+
+Kalau lu mau fitur upload file (Nota Dinas, HPS, dll) jalan, lu perlu setting Folder ID:
+
+### **Cara Dapetin Folder ID:**
+
+1. **Buka Google Drive** lu
+2. **Buat folder baru**: 
+   - Klik kanan > New folder
+   - Nama: `Upload_Pengajuan_PPK` (atau terserah)
+3. **Buka folder** yang baru dibuat
+4. **Lihat URL** di address bar:
+```
+   https://drive.google.com/drive/folders/1A2B3C4D5E6F7G8H9I0J...
+```
+5. **Copy ID-nya** (bagian setelah `/folders/`):
+```
+   1A2B3C4D5E6F7G8H9I0J...;
     
     // Mock user (nanti diganti dengan login real)
     const CURRENT_USER = {
