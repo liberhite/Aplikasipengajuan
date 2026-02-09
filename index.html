@@ -3,632 +3,1717 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Pengadaan - Dashboard PPK</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>SISDAJA - Sistem Dashboard Pengadaan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        .loading { display: none; }
-        .loading.active { display: flex; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        :root {
+            /* Color System */
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --primary-light: #60a5fa;
+            --secondary: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            
+            /* Neutrals */
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            
+            /* Background */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            
+            /* Text */
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-inverse: #ffffff;
+            
+            /* Borders */
+            --border-color: #e5e7eb;
+            --border-radius: 12px;
+            --border-radius-lg: 16px;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            
+            /* Sidebar */
+            --sidebar-width: 260px;
+            --navbar-height: 70px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Layout Structure */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .sidebar-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: var(--spacing-md);
+            overflow-y: auto;
+        }
+        
+        .nav-item {
+            padding: 12px 16px;
+            margin-bottom: 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+        }
+        
+        .sidebar-footer {
+            padding: var(--spacing-lg);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .user-details {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .user-role {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Navbar */
+        .navbar {
+            height: var(--navbar-height);
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--spacing-xl);
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .navbar-left h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-input {
+            width: 300px;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+        }
+        
+        .notification-btn {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .notification-btn:hover {
+            background: var(--gray-200);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: var(--spacing-xl);
+            overflow-y: auto;
+        }
+        
+        /* Dashboard Section */
+        .dashboard-section {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-card.primary::before { background: var(--primary); }
+        .stat-card.secondary::before { background: var(--secondary); }
+        .stat-card.warning::before { background: var(--warning); }
+        .stat-card.danger::before { background: var(--danger); }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .stat-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .stat-card.primary .stat-icon {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+        }
+        
+        .stat-card.secondary .stat-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--secondary);
+        }
+        
+        .stat-card.warning .stat-icon {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        
+        .stat-card.danger .stat-icon {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .stat-change {
+            font-size: 13px;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+        
+        .stat-change.negative {
+            color: var(--danger);
+        }
+        
+        /* Live Feed */
+        .live-feed {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .feed-item {
+            padding: var(--spacing-md);
+            border-left: 3px solid var(--primary);
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: var(--spacing-sm);
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .feed-item-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .feed-item-body {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .feed-item-time {
+            font-size: 12px;
+            color: var(--gray-400);
+            margin-top: 6px;
+        }
+        
+        /* Charts Container */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow);
+        }
+        
+        .chart-placeholder {
+            height: 300px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        /* Table */
+        .table-container {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table thead {
+            background: var(--bg-secondary);
+        }
+        
+        .table th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+        
+        .table tbody tr:hover {
+            background: var(--bg-secondary);
+        }
+        
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .badge.pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        
+        .badge.processing {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+        }
+        
+        .badge.completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--secondary);
+        }
+        
+        /* Button */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+        
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+        }
+        
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* File Upload */
+        .file-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-xl);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .file-upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.02);
+        }
+        
+        .file-upload-icon {
+            font-size: 48px;
+            color: var(--gray-300);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .file-upload-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-close:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .modal-body {
+            padding: var(--spacing-lg);
+        }
+        
+        .modal-footer {
+            padding: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-md);
+        }
+        
+        /* Alert */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--secondary);
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .alert-info {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border-left: 4px solid var(--warning);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-input {
+                width: 200px;
+            }
+        }
+        
+        /* Loading State */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            transition: width 0.3s ease;
+        }
     </style>
 </head>
-<body class="bg-gray-100 font-sans">
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center">
-        <div class="bg-white p-6 rounded-lg shadow-xl">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p class="mt-4 text-gray-700">Loading...</p>
-        </div>
-    </div>
-
-    <div class="min-h-screen flex">
+<body>
+    <div class="app-container">
         <!-- Sidebar -->
-        <aside class="w-64 bg-blue-800 text-white flex flex-col shadow-xl">
-            <div class="p-6 border-b border-blue-700">
-                <h1 class="text-xl font-bold">Sistem Pengadaan</h1>
-                <p class="text-xs text-blue-200 mt-1">Dashboard PPK</p>
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">📊</div>
+                    <span>SISDAJA</span>
+                </div>
             </div>
             
-            <nav class="flex-1 py-4">
-                <button onclick="showPage('dashboard')" class="nav-item w-full text-left px-6 py-3 bg-blue-700 text-white hover:bg-blue-600 transition flex items-center">
-                    <i class="fas fa-chart-dashboard w-6"></i>
-                    <span>Dashboard</span>
-                </button>
-                <button onclick="showPage('form')" class="nav-item w-full text-left px-6 py-3 text-blue-100 hover:bg-blue-600 transition flex items-center">
-                    <i class="fas fa-plus-circle w-6"></i>
-                    <span>Pengajuan Baru</span>
-                </button>
-                <button onclick="showPage('history')" class="nav-item w-full text-left px-6 py-3 text-blue-100 hover:bg-blue-600 transition flex items-center">
-                    <i class="fas fa-history w-6"></i>
-                    <span>Riwayat</span>
-                </button>
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-dashboard="utama">
+                    <span class="nav-icon">🏠</span>
+                    <span>Dashboard Utama</span>
+                </div>
+                <div class="nav-item" data-dashboard="ppk">
+                    <span class="nav-icon">📝</span>
+                    <span>Dashboard PPK</span>
+                </div>
+                <div class="nav-item" data-dashboard="pp">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Dashboard PP</span>
+                </div>
+                <div class="nav-item" data-dashboard="ketua">
+                    <span class="nav-icon">📈</span>
+                    <span>Dashboard Ketua Tim</span>
+                </div>
             </nav>
             
-            <div class="p-4 border-t border-blue-700">
-                <p class="text-sm font-medium" id="userName">Budi Santoso</p>
-                <p class="text-xs text-blue-300" id="userSatker">Direktorat Pengadaan</p>
-                <p class="text-xs text-blue-400 mt-1" id="userEmail">ppk.budi@kemenkeu.go.id</p>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">LB</div>
+                    <div class="user-details">
+                        <div class="user-name">Liber</div>
+                        <div class="user-role">PPK - DPM</div>
+                    </div>
+                </div>
             </div>
         </aside>
-
+        
         <!-- Main Content -->
-        <main class="flex-1 overflow-auto">
+        <main class="main-content">
+            <!-- Navbar -->
+            <nav class="navbar">
+                <div class="navbar-left">
+                    <h1 id="page-title">Dashboard Utama</h1>
+                </div>
+                <div class="navbar-right">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="Cari paket pengadaan...">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <button class="notification-btn">
+                        🔔
+                        <span class="notification-badge"></span>
+                    </button>
+                </div>
+            </nav>
             
-            <!-- DASHBOARD PAGE -->
-            <div id="dashboard" class="page p-8 fade-in">
-                <h2 class="text-3xl font-bold text-gray-800 mb-6">Dashboard</h2>
-                
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p class="text-gray-500 text-sm">Total Pengajuan</p>
-                                <p class="text-3xl font-bold text-gray-800" id="statTotal">-</p>
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Dashboard Utama -->
+                <section id="dash-utama" class="dashboard-section">
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card primary">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Total Paket</div>
+                                    <div class="stat-value">142</div>
+                                    <div class="stat-change">+12 bulan ini</div>
+                                </div>
+                                <div class="stat-icon">📦</div>
                             </div>
-                            <i class="fas fa-file-alt text-3xl text-blue-200"></i>
                         </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p class="text-gray-500 text-sm">Diproses</p>
-                                <p class="text-3xl font-bold text-yellow-600" id="statDiproses">-</p>
-                            </div>
-                            <i class="fas fa-clock text-3xl text-yellow-200"></i>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p class="text-gray-500 text-sm">Selesai</p>
-                                <p class="text-3xl font-bold text-green-600" id="statSelesai">-</p>
-                            </div>
-                            <i class="fas fa-check-circle text-3xl text-green-200"></i>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p class="text-gray-500 text-sm">Ditolak</p>
-                                <p class="text-3xl font-bold text-red-600" id="statDitolak">-</p>
-                            </div>
-                            <i class="fas fa-times-circle text-3xl text-red-200"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Activity -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="p-6 border-b">
-                        <h3 class="text-lg font-semibold">Aktivitas Terbaru</h3>
-                    </div>
-                    <div class="p-6">
-                        <div id="recentActivity">Loading...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FORM PAGE -->
-            <div id="form" class="page hidden p-8 fade-in">
-                <h2 class="text-3xl font-bold text-gray-800 mb-6">Pengajuan Baru</h2>
-                
-                <form id="pengajuanForm" class="bg-white rounded-lg shadow p-8 max-w-4xl">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         
-                        <!-- Nomor Proses (Auto) -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Proses</label>
-                            <input type="text" id="nomorProses" readonly 
-                                class="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-600">
+                        <div class="stat-card warning">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Sedang Diproses</div>
+                                    <div class="stat-value">23</div>
+                                    <div class="stat-change">4 mendekati deadline</div>
+                                </div>
+                                <div class="stat-icon">⏳</div>
+                            </div>
                         </div>
-
-                        <!-- Tanggal -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Pengajuan</label>
-                            <input type="date" id="tanggal" required
-                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-
-                        <!-- Nama Paket -->
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nama Paket Pekerjaan</label>
-                            <input type="text" id="namaPaket" required placeholder="Contoh: Pengadaan Komputer dan Printer"
-                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-
-                        <!-- Uraian -->
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Uraian Pekerjaan</label>
-                            <textarea id="uraianPekerjaan" rows="3" required
-                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
-                        </div>
-
-                        <!-- Jenis Pengadaan -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Pengadaan</label>
-                            <select id="jenisPengadaan" required
-                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Pilih Jenis</option>
-                                <option value="Barang">Barang</option>
-                                <option value="Jasa">Jasa</option>
-                                <option value="Konsultasi">Konsultasi</option>
-                                <option value="Pekerjaan Konstruksi">Pekerjaan Konstruksi</option>
-                            </select>
-                        </div>
-
-                        <!-- HPS -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">HPS (Rp)</label>
-                            <input type="number" id="hpsNominal" required placeholder="0"
-                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-
-                        <!-- Jangka Waktu -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Jangka Waktu (hari)</label>
-                            <input type="number" id="jangkaWaktu" required placeholder="30"
-                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                    </div>
-
-                    <!-- File Upload Section -->
-                    <div class="mt-8 border-t pt-6">
-                        <h3 class="text-lg font-semibold mb-4">Dokumen Pendukung</h3>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition">
-                                <label class="cursor-pointer">
-                                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                                    <p class="text-sm text-gray-600">Nota Dinas</p>
-                                    <input type="file" id="fileNota" class="hidden" accept=".pdf,.doc,.docx" onchange="handleFileSelect(this, 'notaDinasUrl')">
-                                </label>
-                                <p id="notaDinasUrl" class="text-xs text-green-600 mt-2 hidden"></p>
+                        <div class="stat-card secondary">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Selesai</div>
+                                    <div class="stat-value">119</div>
+                                    <div class="stat-change">83.8% completion rate</div>
+                                </div>
+                                <div class="stat-icon">✅</div>
                             </div>
-
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition">
-                                <label class="cursor-pointer">
-                                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                                    <p class="text-sm text-gray-600">HPS</p>
-                                    <input type="file" id="fileHps" class="hidden" accept=".pdf,.xls,.xlsx" onchange="handleFileSelect(this, 'hpsUrl')">
-                                </label>
-                                <p id="hpsUrl" class="text-xs text-green-600 mt-2 hidden"></p>
-                            </div>
-
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition">
-                                <label class="cursor-pointer">
-                                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                                    <p class="text-sm text-gray-600">Kontrak/SPK</p>
-                                    <input type="file" id="fileKontrak" class="hidden" accept=".pdf" onchange="handleFileSelect(this, 'kontrakUrl')">
-                                </label>
-                                <p id="kontrakUrl" class="text-xs text-green-600 mt-2 hidden"></p>
-                            </div>
-
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition">
-                                <label class="cursor-pointer">
-                                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                                    <p class="text-sm text-gray-600">Spesifikasi Teknis</p>
-                                    <input type="file" id="fileSpesifikasi" class="hidden" accept=".pdf,.doc,.docx" onchange="handleFileSelect(this, 'spesifikasiUrl')">
-                                </label>
-                                <p id="spesifikasiUrl" class="text-xs text-green-600 mt-2 hidden"></p>
+                        </div>
+                        
+                        <div class="stat-card primary">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Total Nilai Pagu</div>
+                                    <div class="stat-value">12.4M</div>
+                                    <div class="stat-change">Rupiah</div>
+                                </div>
+                                <div class="stat-icon">💰</div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Submit Button -->
-                    <div class="mt-8 flex justify-end">
-                        <button type="button" onclick="submitPengajuan()" id="btnSubmit"
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg shadow transition flex items-center">
-                            <i class="fas fa-paper-plane mr-2"></i>
-                            Submit Pengajuan
-                        </button>
+                    
+                    <!-- Live Activity Feed -->
+                    <div class="live-feed">
+                        <div class="section-header">
+                            <h2 class="section-title">🔴 Live Activity Feed</h2>
+                        </div>
+                        <div id="activity-feed">
+                            <div class="feed-item">
+                                <div class="feed-item-header">PPK Liber mengajukan paket baru</div>
+                                <div class="feed-item-body">Pengadaan Laptop Core i7 - Ditugaskan ke PP Andi Wijaya</div>
+                                <div class="feed-item-time">2 menit yang lalu</div>
+                            </div>
+                            <div class="feed-item">
+                                <div class="feed-item-header">PP Budi Sudarsono menyelesaikan paket</div>
+                                <div class="feed-item-body">Pengadaan ATK Kantor - Nilai Nego: Rp 45.000.000</div>
+                                <div class="feed-item-time">15 menit yang lalu</div>
+                            </div>
+                            <div class="feed-item">
+                                <div class="feed-item-header">PPK Siti mengajukan paket baru</div>
+                                <div class="feed-item-body">Pengadaan Peralatan IT - Ditugaskan ke PP Candra</div>
+                                <div class="feed-item-time">1 jam yang lalu</div>
+                            </div>
+                        </div>
                     </div>
-                </form>
-            </div>
-
-            <!-- HISTORY PAGE -->
-            <div id="history" class="page hidden p-8 fade-in">
-                <h2 class="text-3xl font-bold text-gray-800 mb-6">Riwayat Pengajuan</h2>
-                
-                <div class="bg-white rounded-lg shadow overflow-hidden">
-                    <div class="p-4 border-b flex justify-between items-center">
-                        <input type="text" id="searchInput" placeholder="Cari nomor atau nama paket..." 
-                            class="border border-gray-300 rounded-lg px-4 py-2 w-64 focus:ring-2 focus:ring-blue-500"
-                            onkeyup="filterTable()">
+                    
+                    <!-- Charts -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3 class="section-title">Beban Kerja PP</h3>
+                            <div class="chart-placeholder">
+                                📊 Grafik Batang Beban Kerja<br>
+                                <small>Andi: 8 paket | Budi: 6 paket | Candra: 9 paket</small>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3 class="section-title">Serapan Anggaran</h3>
+                            <div class="chart-placeholder">
+                                📈 Grafik Garis Serapan<br>
+                                <small>Target: 80% | Realisasi: 67.5%</small>
+                            </div>
+                        </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-gray-50">
+                    
+                    <!-- Recent Packages Table -->
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3 class="section-title">Paket Terbaru</h3>
+                        </div>
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Paket</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">HPS</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">PP</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th>No Proses</th>
+                                    <th>Nama Paket</th>
+                                    <th>PPK</th>
+                                    <th>PP Ditugaskan</th>
+                                    <th>Nilai HPS</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="historyTableBody" class="divide-y divide-gray-200">
-                                <!-- Dynamic content -->
+                            <tbody>
+                                <tr>
+                                    <td>DPM-PL-042</td>
+                                    <td>Laptop Core i7</td>
+                                    <td>Liber</td>
+                                    <td>Andi Wijaya</td>
+                                    <td>Rp 100.000.000</td>
+                                    <td><span class="badge processing">Diproses</span></td>
+                                </tr>
+                                <tr>
+                                    <td>DPM-PL-041</td>
+                                    <td>ATK Kantor</td>
+                                    <td>Siti</td>
+                                    <td>Budi Sudarsono</td>
+                                    <td>Rp 50.000.000</td>
+                                    <td><span class="badge completed">Selesai</span></td>
+                                </tr>
+                                <tr>
+                                    <td>DPM-EP-040</td>
+                                    <td>Peralatan IT</td>
+                                    <td>Ahmad</td>
+                                    <td>Candra</td>
+                                    <td>Rp 75.000.000</td>
+                                    <td><span class="badge processing">Diproses</span></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </section>
+                
+                <!-- Dashboard PPK -->
+                <section id="dash-ppk" class="dashboard-section hidden">
+                    <!-- PPK Summary Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card primary">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Total Pengajuan Saya</div>
+                                    <div class="stat-value">12</div>
+                                </div>
+                                <div class="stat-icon">📝</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card warning">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Sedang Diproses</div>
+                                    <div class="stat-value">2</div>
+                                </div>
+                                <div class="stat-icon">⏳</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card secondary">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Selesai</div>
+                                    <div class="stat-value">10</div>
+                                </div>
+                                <div class="stat-icon">✅</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Pengajuan -->
+                    <div class="live-feed">
+                        <div class="section-header">
+                            <h2 class="section-title">Form Pengajuan Baru</h2>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <span>ℹ️</span>
+                            <span>Nomor Proses akan di-generate otomatis setelah submit</span>
+                        </div>
+                        
+                        <form id="form-pengajuan">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Nama Paket</label>
+                                    <input type="text" class="form-input" placeholder="Contoh: Pengadaan Laptop Core i7" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Nilai HPS (Rupiah)</label>
+                                    <input type="number" class="form-input" placeholder="Contoh: 100000000" required>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label class="form-label">Uraian Pekerjaan</label>
+                                    <textarea class="form-textarea" placeholder="Deskripsi detail pekerjaan..." required></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Jenis Pengadaan</label>
+                                    <select class="form-select" required>
+                                        <option value="">Pilih Jenis</option>
+                                        <option value="PL">Pengadaan Langsung (PL)</option>
+                                        <option value="EP">E-Purchasing</option>
+                                        <option value="PTL">Penunjukan Langsung</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Metode Pemilihan</label>
+                                    <select class="form-select" required>
+                                        <option value="">Pilih Metode</option>
+                                        <option value="tender">Tender</option>
+                                        <option value="seleksi">Seleksi</option>
+                                        <option value="penunjukan">Penunjukan Langsung</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Jangka Waktu</label>
+                                    <input type="text" class="form-input" placeholder="Contoh: 30 hari kalender" required>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label class="form-label">Upload Nota Dinas (PDF)</label>
+                                    <div class="file-upload-area">
+                                        <div class="file-upload-icon">📄</div>
+                                        <div class="file-upload-text">Klik atau drag file ke sini</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label class="form-label">Upload HPS Excel</label>
+                                    <div class="file-upload-area">
+                                        <div class="file-upload-icon">📊</div>
+                                        <div class="file-upload-text">Klik atau drag file ke sini</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label class="form-label">Upload Spesifikasi Teknis / KAK</label>
+                                    <div class="file-upload-area">
+                                        <div class="file-upload-icon">📋</div>
+                                        <div class="file-upload-text">Klik atau drag file ke sini</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label class="form-label">Upload Rancangan Kontrak</label>
+                                    <div class="file-upload-area">
+                                        <div class="file-upload-icon">📝</div>
+                                        <div class="file-upload-text">Klik atau drag file ke sini</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                                <button type="button" class="btn btn-secondary">Reset Form</button>
+                                <button type="submit" class="btn btn-primary">
+                                    <span>Submit Pengajuan</span>
+                                    <span>🚀</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Riwayat Pengajuan -->
+                    <div class="table-container" style="margin-top: 24px;">
+                        <div class="table-header">
+                            <h3 class="section-title">Riwayat Pengajuan Saya</h3>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>No Proses</th>
+                                    <th>Nama Paket</th>
+                                    <th>PP Ditugaskan</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>DPM-PL-042</td>
+                                    <td>Laptop Core i7</td>
+                                    <td>Andi Wijaya (0812-xxxx)</td>
+                                    <td><span class="badge processing">Diproses</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary" style="padding: 6px 12px;">Detail</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>DPM-PL-040</td>
+                                    <td>ATK Kantor</td>
+                                    <td>Budi Sudarsono (0813-xxxx)</td>
+                                    <td><span class="badge completed">Selesai</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary" style="padding: 6px 12px;">Detail</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- Dashboard PP -->
+                <section id="dash-pp" class="dashboard-section hidden">
+                    <!-- PP Summary Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card warning">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Tugas Baru</div>
+                                    <div class="stat-value">3</div>
+                                </div>
+                                <div class="stat-icon">📬</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card primary">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">On Progress</div>
+                                    <div class="stat-value">5</div>
+                                </div>
+                                <div class="stat-icon">⚙️</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card secondary">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Total Selesai</div>
+                                    <div class="stat-value">25</div>
+                                </div>
+                                <div class="stat-icon">✅</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card danger">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">SLA Warning</div>
+                                    <div class="stat-value">2</div>
+                                </div>
+                                <div class="stat-icon">⚠️</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notification Bar -->
+                    <div class="alert alert-info">
+                        <span>🔔</span>
+                        <span>Ada pengajuan baru dari PPK Liber (Satker DPM) untuk Paket Pengadaan Server, otomatis ditugaskan kepada Anda. Silakan proses.</span>
+                    </div>
+                    
+                    <!-- Workload Chart -->
+                    <div class="chart-card" style="margin-bottom: 24px;">
+                        <h3 class="section-title">Grafik Beban Kerja Saya</h3>
+                        <div class="chart-placeholder">
+                            📊 Pie Chart: Lancar (70%) vs Hampir Telat (30%)
+                        </div>
+                    </div>
+                    
+                    <!-- Task Table -->
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3 class="section-title">Daftar Tugas Saya</h3>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>No Proses</th>
+                                    <th>Nama Paket</th>
+                                    <th>PPK</th>
+                                    <th>Nilai HPS</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>DPM-PL-042</td>
+                                    <td>Laptop Core i7</td>
+                                    <td>Liber (DPM)</td>
+                                    <td>Rp 100.000.000</td>
+                                    <td><span class="badge pending">Pending</span></td>
+                                    <td>
+                                        <button class="btn btn-primary" style="padding: 6px 12px;" onclick="openProsesModal()">
+                                            Proses Paket
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>DPM-PL-038</td>
+                                    <td>Meja Kantor</td>
+                                    <td>Ahmad (Keuangan)</td>
+                                    <td>Rp 35.000.000</td>
+                                    <td><span class="badge processing">Drafting</span></td>
+                                    <td>
+                                        <button class="btn btn-primary" style="padding: 6px 12px;">
+                                            Lanjutkan
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- Dashboard Ketua Tim -->
+                <section id="dash-ketua" class="dashboard-section hidden">
+                    <!-- Filter Date Range -->
+                    <div class="live-feed" style="margin-bottom: 24px;">
+                        <div class="section-header">
+                            <h2 class="section-title">Filter Periode</h2>
+                        </div>
+                        <div style="display: flex; gap: 16px; align-items: end;">
+                            <div class="form-group">
+                                <label class="form-label">Tanggal Mulai</label>
+                                <input type="date" class="form-input" value="2026-01-01">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Tanggal Akhir</label>
+                                <input type="date" class="form-input" value="2026-02-09">
+                            </div>
+                            <button class="btn btn-primary">Terapkan Filter</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Big Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card primary">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Total Paket</div>
+                                    <div class="stat-value">142</div>
+                                </div>
+                                <div class="stat-icon">📦</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card secondary">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Total Realisasi</div>
+                                    <div class="stat-value">8.3M</div>
+                                    <div class="stat-change">66.9% dari pagu</div>
+                                </div>
+                                <div class="stat-icon">💰</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card primary">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Total Vendor</div>
+                                    <div class="stat-value">47</div>
+                                </div>
+                                <div class="stat-icon">🏢</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card warning">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Paket On-Progress</div>
+                                    <div class="stat-value">23</div>
+                                </div>
+                                <div class="stat-icon">⏳</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Analytics Charts -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3 class="section-title">Beban Kerja PP</h3>
+                            <div class="chart-placeholder">
+                                📊 Grafik Batang<br>
+                                <small>Andi: 8 | Budi: 6 | Candra: 9</small>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3 class="section-title">Jenis Pengadaan</h3>
+                            <div class="chart-placeholder">
+                                🥧 Pie Chart<br>
+                                <small>PL: 45% | E-Purchasing: 35% | PTL: 20%</small>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3 class="section-title">Segmentasi Nilai</h3>
+                            <div class="chart-placeholder">
+                                📊 Bar Chart<br>
+                                <small>&lt;50jt: 78 paket | &gt;50jt: 64 paket</small>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3 class="section-title">Paket per Satker</h3>
+                            <div class="chart-placeholder">
+                                🥧 Donut Chart<br>
+                                <small>DPM: 45 | Keuangan: 38 | Umum: 32</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Red Flag Table -->
+                    <div class="table-container" style="margin-bottom: 24px;">
+                        <div class="table-header">
+                            <h3 class="section-title">🚨 Paket Macet (Red Flag)</h3>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>No Proses</th>
+                                    <th>Nama Paket</th>
+                                    <th>PP Ditugaskan</th>
+                                    <th>Hari Tertunda</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>DPM-PL-035</td>
+                                    <td>Pengadaan AC</td>
+                                    <td>Andi Wijaya</td>
+                                    <td><span class="badge danger">12 hari</span></td>
+                                    <td>
+                                        <button class="btn btn-primary" style="padding: 6px 12px;">
+                                            Pindah Tugas
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Master Monitoring Table -->
+                    <div class="table-container">
+                        <div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3 class="section-title">Master Monitoring</h3>
+                            <button class="btn btn-primary">
+                                <span>📥</span>
+                                <span>Export to Excel</span>
+                            </button>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>No Proses</th>
+                                    <th>Nama Paket</th>
+                                    <th>PPK</th>
+                                    <th>PP Ditugaskan</th>
+                                    <th>Nilai HPS</th>
+                                    <th>Harga Nego</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>DPM-PL-042</td>
+                                    <td>Laptop Core i7</td>
+                                    <td>Liber</td>
+                                    <td>Andi Wijaya</td>
+                                    <td>Rp 100.000.000</td>
+                                    <td>-</td>
+                                    <td><span class="badge processing">Diproses</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary" style="padding: 6px 12px;">Re-assign</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>DPM-PL-041</td>
+                                    <td>ATK Kantor</td>
+                                    <td>Siti</td>
+                                    <td>Budi Sudarsono</td>
+                                    <td>Rp 50.000.000</td>
+                                    <td>Rp 45.000.000</td>
+                                    <td><span class="badge completed">Selesai</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary" style="padding: 6px 12px;">Detail</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
-
         </main>
     </div>
-
-    <!-- Success Modal -->
-    <div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
-            <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
-                    <i class="fas fa-check text-2xl text-green-600"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-900 mb-2">Pengajuan Berhasil!</h3>
-                <p class="text-gray-500 mb-4">Nomor Proses: <span id="successNomor" class="font-bold text-blue-600"></span></p>
-                
-                <div class="bg-blue-50 rounded-lg p-4 mb-4 text-left">
-                    <p class="text-xs font-semibold text-blue-800 uppercase mb-2">Ditugaskan ke PP:</p>
-                    <p id="successPPName" class="font-medium text-gray-900"></p>
-                    <p id="successPPEmail" class="text-sm text-gray-600"></p>
+    
+    <!-- Modal Proses Paket PP -->
+    <div id="modal-proses" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Proses Paket: DPM-PL-042</h3>
+                <button class="modal-close" onclick="closeProsesModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <span>ℹ️</span>
+                    <span>Paket: Laptop Core i7 | PPK: Liber | HPS: Rp 100.000.000</span>
                 </div>
                 
-                <button onclick="closeSuccessModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-                    OK
+                <h4 style="margin: 24px 0 16px 0; font-size: 16px; font-weight: 600;">1. Data Vendor</h4>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label class="form-label">Cari Vendor Lama / Input Baru</label>
+                        <input type="text" class="form-input" placeholder="Ketik nama perusahaan...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Nama Perusahaan</label>
+                        <input type="text" class="form-input" placeholder="PT. Example">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">NPWP</label>
+                        <input type="text" class="form-input" placeholder="00.000.000.0-000.000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Bank</label>
+                        <input type="text" class="form-input" placeholder="Contoh: BCA">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">No Rekening</label>
+                        <input type="text" class="form-input" placeholder="1234567890">
+                    </div>
+                </div>
+                
+                <h4 style="margin: 24px 0 16px 0; font-size: 16px; font-weight: 600;">2. Negosiasi & Realisasi</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nilai HPS (Locked)</label>
+                        <input type="text" class="form-input" value="Rp 100.000.000" disabled>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Harga Hasil Negosiasi</label>
+                        <input type="number" class="form-input" placeholder="95000000">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <div class="alert alert-success">
+                            <span>✅</span>
+                            <span>Efisiensi Anggaran: Rp 5.000.000 (5%)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <h4 style="margin: 24px 0 16px 0; font-size: 16px; font-weight: 600;">3. Document Engine</h4>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-secondary" disabled>
+                        <span>📄</span>
+                        <span>Generate PDF</span>
+                    </button>
+                    <button class="btn btn-secondary" disabled>
+                        <span>📧</span>
+                        <span>Kirim Email</span>
+                    </button>
+                </div>
+                <p style="margin-top: 8px; font-size: 13px; color: var(--text-secondary);">
+                    * Tombol akan aktif setelah data vendor dan nego terisi
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeProsesModal()">Batal</button>
+                <button class="btn btn-primary">
+                    <span>✅</span>
+                    <span>Paket Selesai</span>
                 </button>
             </div>
         </div>
     </div>
-
-    <!-- JAVASCRIPT -->
+    
     <script>
-        // ==========================================
-        // CONFIGURATION - GANTI INI!
-        // ==========================================
-        const CONFIG = {
-            // GANTI dengan URL Web App lu setelah deploy!
-            API_URL: 'https://script.google.com/macros/s/AKfycbxXXXXXXXXXXXXXXXXXXXXXXXX/exec',
-            
-            MOCK_USER: {
-                email: 'ppk.budi@kemenkeu.go.id',
-                nama: 'Budi Santoso, S.E.',
-                nip: '198501152010011002',
-                satker: 'Direktorat Pengadaan'
-            }
-        };
-
-        // ==========================================
-        // UTILITY FUNCTIONS
-        // ==========================================
+        // State Management
+        let currentDashboard = 'utama';
         
-        function showLoading(show) {
-            document.getElementById('loadingOverlay').classList.toggle('active', show);
-        }
-
-        function showError(message) {
-            alert('Error: ' + message);
-            console.error(message);
-        }
-
-        // ==========================================
-        // API CALLS (FETCH REPLACEMENT)
-        // ==========================================
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const dashboard = this.dataset.dashboard;
+                switchDashboard(dashboard);
+            });
+        });
         
-        async function apiCall(action, params = {}, method = 'GET', postData = null) {
-            showLoading(true);
-            
-            try {
-                let url = `${https://script.google.com/macros/s/AKfycbwQlV0YFQELW4iMPnIIukInzn_9tM_MSJXbrnoIJ1-Gk4L8HXB5b9_2zAzUSMFiF1J2FA/exec}?action=${action}`;
-                
-                // Add query params
-                Object.keys(params).forEach(key => {
-                    url += `&${key}=${encodeURIComponent(params[key])}`;
-                });
-
-                const options = {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                };
-
-                if (postData) {
-                    options.body = JSON.stringify(postData);
-                }
-
-                const response = await fetch(url, options);
-                const data = await response.json();
-                
-                showLoading(false);
-                return data;
-                
-            } catch (error) {
-                showLoading(false);
-                showError('Gagal konek ke server: ' + error.message);
-                throw error;
-            }
-        }
-
-        // Wrapper functions (ganti google.script.run)
-        async function getDashboardData(emailPPK) {
-            return await apiCall('getDashboardData', { emailPPK });
-        }
-
-        async function getNextNomorProses() {
-            return await apiCall('getNextNomorProses');
-        }
-
-        async function submitPengajuanAPI(data) {
-            return await apiCall('submitPengajuan', {}, 'POST', data);
-        }
-
-        async function uploadFileAPI(base64Data, filename, mimeType) {
-            return await apiCall('uploadFile', {}, 'POST', { base64Data, filename, mimeType });
-        }
-
-        // ==========================================
-        // UI FUNCTIONS
-        // ==========================================
-        
-        function showPage(pageId) {
-            // Hide all pages
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.add('hidden');
+        function switchDashboard(dashboard) {
+            // Hide all dashboards
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.classList.add('hidden');
             });
             
-            // Show target
-            document.getElementById(pageId).classList.remove('hidden');
+            // Show selected dashboard
+            document.getElementById(`dash-${dashboard}`).classList.remove('hidden');
             
             // Update nav active state
             document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('bg-blue-700', 'text-white');
-                item.classList.add('text-blue-100');
+                item.classList.remove('active');
             });
+            document.querySelector(`[data-dashboard="${dashboard}"]`).classList.add('active');
             
-            event.currentTarget.classList.add('bg-blue-700', 'text-white');
-            event.currentTarget.classList.remove('text-blue-100');
-            
-            // Load data if needed
-            if (pageId === 'dashboard') {
-                loadDashboardData();
-            } else if (pageId === 'form') {
-                loadNomorProses();
-            } else if (pageId === 'history') {
-                loadHistory();
-            }
-        }
-
-        // ==========================================
-        // DATA LOADING
-        // ==========================================
-        
-        async function loadDashboardData() {
-            try {
-                const response = await getDashboardData(CONFIG.MOCK_USER.email);
-                
-                if (response.success) {
-                    // Update stats
-                    document.getElementById('statTotal').textContent = response.stats.total;
-                    document.getElementById('statDiproses').textContent = response.stats.diproses;
-                    document.getElementById('statSelesai').textContent = response.stats.selesai;
-                    document.getElementById('statDitolak').textContent = response.stats.ditolak;
-                    
-                    // Update recent activity
-                    const recent = response.pengajuan.slice(0, 5);
-                    const html = recent.length ? recent.map(p => `
-                        <div class="flex justify-between items-center py-3 border-b last:border-0">
-                            <div>
-                                <p class="font-medium text-gray-800">${p.namaPaket}</p>
-                                <p class="text-sm text-gray-500">${p.nomorProses}</p>
-                            </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(p.status)}">
-                                ${p.status}
-                            </span>
-                        </div>
-                    `).join('') : '<p class="text-gray-500">Belum ada pengajuan</p>';
-                    
-                    document.getElementById('recentActivity').innerHTML = html;
-                }
-            } catch (e) {
-                console.error('Error loading dashboard:', e);
-            }
-        }
-
-        async function loadNomorProses() {
-            try {
-                const response = await getNextNomorProses();
-                if (response.success) {
-                    document.getElementById('nomorProses').value = response.nomorProses;
-                }
-            } catch (e) {
-                console.error('Error loading nomor:', e);
-            }
-        }
-
-        async function loadHistory() {
-            try {
-                const response = await getDashboardData(CONFIG.MOCK_USER.email);
-                if (response.success) {
-                    updateHistoryTable(response.pengajuan);
-                }
-            } catch (e) {
-                console.error('Error loading history:', e);
-            }
-        }
-
-        function updateHistoryTable(data) {
-            const tbody = document.getElementById('historyTableBody');
-            
-            if (!data.length) {
-                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Belum ada data</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = data.map(row => `
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 font-medium text-gray-900">${row.nomorProses}</td>
-                    <td class="px-6 py-4 text-gray-600">${formatDate(row.tanggal)}</td>
-                    <td class="px-6 py-4 text-gray-800">${row.namaPaket}</td>
-                    <td class="px-6 py-4 text-gray-600">Rp ${formatNumber(row.hpsNominal)}</td>
-                    <td class="px-6 py-4 text-gray-600">${row.namaPP || '-'}</td>
-                    <td class="px-6 py-4">
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(row.status)}">
-                            ${row.status}
-                        </span>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // ==========================================
-        // FORM HANDLING
-        // ==========================================
-        
-        async function handleFileSelect(input, targetId) {
-            if (!input.files.length) return;
-            
-            const file = input.files[0];
-            const maxSize = 5 * 1024 * 1024; // 5MB
-            
-            if (file.size > maxSize) {
-                alert('File terlalu besar. Maksimal 5MB.');
-                input.value = '';
-                return;
-            }
-            
-            showLoading(true);
-            
-            try {
-                const base64 = await fileToBase64(file);
-                const response = await uploadFileAPI(base64, file.name, file.type);
-                
-                if (response.success) {
-                    document.getElementById(targetId).textContent = `✓ ${file.name}`;
-                    document.getElementById(targetId).classList.remove('hidden');
-                    document.getElementById(targetId).dataset.url = response.fileUrl;
-                }
-            } catch (e) {
-                alert('Gagal upload file');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        async function submitPengajuan() {
-            // Validasi
-            const required = ['namaPaket', 'uraianPekerjaan', 'jenisPengadaan', 'hpsNominal', 'jangkaWaktu'];
-            for (let field of required) {
-                if (!document.getElementById(field).value) {
-                    alert('Mohon lengkapi semua field wajib');
-                    return;
-                }
-            }
-            
-            const formData = {
-                nomorProses: document.getElementById('nomorProses').value,
-                tanggal: document.getElementById('tanggal').value || new Date().toISOString().split('T')[0],
-                namaPaket: document.getElementById('namaPaket').value,
-                uraianPekerjaan: document.getElementById('uraianPekerjaan').value,
-                emailPPK: CONFIG.MOCK_USER.email,
-                namaPPK: CONFIG.MOCK_USER.nama,
-                satker: CONFIG.MOCK_USER.satker,
-                jenisPengadaan: document.getElementById('jenisPengadaan').value,
-                hpsNominal: document.getElementById('hpsNominal').value,
-                jangkaWaktu: document.getElementById('jangkaWaktu').value,
-                notaDinasUrl: document.getElementById('notaDinasUrl').dataset.url || '',
-                hpsUrl: document.getElementById('hpsUrl').dataset.url || '',
-                kontrakUrl: document.getElementById('kontrakUrl').dataset.url || '',
-                spesifikasiUrl: document.getElementById('spesifikasiUrl').dataset.url || ''
+            // Update page title
+            const titles = {
+                'utama': 'Dashboard Utama',
+                'ppk': 'Dashboard PPK',
+                'pp': 'Dashboard PP',
+                'ketua': 'Dashboard Ketua Tim'
             };
+            document.getElementById('page-title').textContent = titles[dashboard];
             
-            try {
-                const btn = document.getElementById('btnSubmit');
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
-                
-                const response = await submitPengajuanAPI(formData);
-                
-                if (response.success) {
-                    document.getElementById('successNomor').textContent = response.nomorProses;
-                    document.getElementById('successPPName').textContent = response.assignedPP.nama;
-                    document.getElementById('successPPEmail').textContent = response.assignedPP.email;
-                    document.getElementById('successModal').classList.remove('hidden');
-                    
-                    document.getElementById('pengajuanForm').reset();
-                } else {
-                    alert('Error: ' + response.error);
-                }
-            } catch (e) {
-                alert('Gagal submit pengajuan');
-            } finally {
-                const btn = document.getElementById('btnSubmit');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Submit Pengajuan';
+            currentDashboard = dashboard;
+        }
+        
+        // Modal Functions
+        function openProsesModal() {
+            document.getElementById('modal-proses').classList.remove('hidden');
+        }
+        
+        function closeProsesModal() {
+            document.getElementById('modal-proses').classList.add('hidden');
+        }
+        
+        // Close modal when clicking overlay
+        document.getElementById('modal-proses').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProsesModal();
             }
-        }
-
-        function closeSuccessModal() {
-            document.getElementById('successModal').classList.add('hidden');
-            showPage('dashboard');
-        }
-
-        // ==========================================
-        // HELPERS
-        // ==========================================
-        
-        function getStatusColor(status) {
-            const colors = {
-                'DIPROSES': 'bg-yellow-100 text-yellow-800',
-                'SELESAI': 'bg-green-100 text-green-800',
-                'DITOLAK': 'bg-red-100 text-red-800'
-            };
-            return colors[status] || 'bg-gray-100 text-gray-800';
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('id-ID');
-        }
-
-        function formatNumber(num) {
-            if (!num) return '0';
-            return parseInt(num).toLocaleString('id-ID');
-        }
-
-        function filterTable() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const rows = document.querySelectorAll('#historyTableBody tr');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(search) ? '' : 'none';
-            });
-        }
-
-        // ==========================================
-        // INIT
-        // ==========================================
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set default date
-            document.getElementById('tanggal').valueAsDate = new Date();
-            
-            // Load initial data
-            loadDashboardData();
         });
+        
+        // Form Submission
+        document.getElementById('form-pengajuan')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show success message
+            const successHtml = `
+                <div class="alert alert-success" style="animation: slideIn 0.5s ease;">
+                    <span>🎉</span>
+                    <div>
+                        <strong>BERHASIL!</strong><br>
+                        <span style="font-size: 13px;">Paket Anda sudah terdaftar dengan nomor DPM-PL-043. PP ditugaskan: Andi Wijaya (0812-xxxx). Pemberitahuan telah dikirim ke Dashboard Utama.</span>
+                    </div>
+                </div>
+            `;
+            
+            // Insert success message before form
+            this.insertAdjacentHTML('beforebegin', successHtml);
+            
+            // Reset form
+            this.reset();
+            
+            // Auto remove success message after 10 seconds
+            setTimeout(() => {
+                document.querySelector('.alert-success').remove();
+            }, 10000);
+        });
+        
+        // Search functionality
+        const searchInput = document.querySelector('.search-input');
+        searchInput?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            // Implement search logic here
+            console.log('Searching for:', searchTerm);
+        });
+        
+        // Live Activity Feed Animation
+        function addActivityFeed(activity) {
+            const feedContainer = document.getElementById('activity-feed');
+            const feedItem = document.createElement('div');
+            feedItem.className = 'feed-item';
+            feedItem.innerHTML = `
+                <div class="feed-item-header">${activity.header}</div>
+                <div class="feed-item-body">${activity.body}</div>
+                <div class="feed-item-time">Baru saja</div>
+            `;
+            feedContainer.insertBefore(feedItem, feedContainer.firstChild);
+            
+            // Keep only last 10 items
+            if (feedContainer.children.length > 10) {
+                feedContainer.removeChild(feedContainer.lastChild);
+            }
+        }
+        
+        // Simulate real-time updates (Demo)
+        // setInterval(() => {
+        //     const activities = [
+        //         { header: 'PPK Ahmad mengajukan paket baru', body: 'Pengadaan Printer - Ditugaskan ke PP Candra' },
+        //         { header: 'PP Andi menyelesaikan paket', body: 'Pengadaan Furniture - Nilai Nego: Rp 35.000.000' }
+        //     ];
+        //     const randomActivity = activities[Math.floor(Math.random() * activities.length)];
+        //     addActivityFeed(randomActivity);
+        // }, 30000); // Every 30 seconds
+        
+        // Initialize
+        console.log('SISDAJA - Sistem Dashboard Pengadaan initialized');
     </script>
 </body>
 </html>
