@@ -1182,6 +1182,12 @@
 </head>
 
 <body>
+    <!-- LOGIN AREA (sementara buat test) -->
+    <div id="login-box">
+        <input id="username" placeholder="Username">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="loginDashboard()">Login</button>
+    </div>
     <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar">
@@ -2997,6 +3003,54 @@
             setupFileUpload();
             console.log('SISDAJA - Sistem Dashboard Pengadaan initialized');
         });
+
+        /* ===== TAMBAH DI BAWAH INI ===== */
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw23g5tYZt5-is9UzdQdIF1ZFq3VTdHr2Z1DByLR_RukttI2R6izCSkzE7pryWV15yzXg/exec";
+
+        async function api(action, payload) {
+            const res = await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify({ action, ...payload })
+            });
+            return res.json();
+        }
+
+        /* LOGIN */
+        async function loginDashboard() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            const res = await api("LOGIN", { username, password });
+
+            if (!res.success) {
+                alert(res.message);
+                return;
+            }
+
+            window.USER = res.data;
+            alert("Login OK: " + res.data.nama);
+        }
+
+        /* SUBMIT PENGAJUAN */
+        async function submitPengajuan() {
+            const res = await api("SUBMIT_PENGAJUAN", {
+                nama_ppk: USER.nama,
+                satker: USER.satker,
+                email_ppk: USER.email,
+                hp_ppk: USER.hp,
+                nama_paket: document.getElementById("nama_paket").value,
+                uraian_pekerjaan: document.getElementById("uraian_pekerjaan").value,
+                pagu_hps: document.getElementById("pagu_hps").value,
+                jenis_pengadaan: document.getElementById("jenis_pengadaan").value,
+                metode_pemilihan: document.getElementById("metode_pemilihan").value
+            });
+
+            if (res.success) {
+                alert("BERHASIL: " + res.data.id_proses);
+            } else {
+                alert(res.message);
+            }
+        }
     </script>
 </body>
 
